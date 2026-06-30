@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname, basename } from "node:path";
 import {
-  readZip, zipToVault, mergeZipMd,
+  readZipDeep, zipToVault, mergeZipMd,
   backupToBasesVault, backupToMarkdown,
 } from "./engine";
 
@@ -79,7 +79,7 @@ async function main() {
   if (isZip) {
     const ab = raw.buffer.slice(raw.byteOffset, raw.byteOffset + raw.byteLength);
     let files;
-    try { files = await readZip(ab as ArrayBuffer); }
+    try { files = await readZipDeep(ab as ArrayBuffer); }
     catch (e: any) { return fail(e?.message || "Couldn't read that .zip."); }
 
     if (args.md) {

@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { deflateRawSync } from "node:zlib";
 import {
-  readZip, writeZip, zipToVault, backupToBasesVault, backupToMarkdown,
+  readZip, readZipDeep, writeZip, zipToVault, backupToBasesVault, backupToMarkdown,
 } from "../dist/engine.js";
 
 const E = new TextEncoder();
@@ -56,6 +56,18 @@ test("readZip inflates deflate (method 8) entries — the Notion-export path", a
   const files = await readZip(z.buffer);
   assert.equal(files.length, 1);
   assert.equal(D.decode(files[0].data), body);
+});
+
+test("readZipDeep descends into Notion's nested/multi-part export zips", async () => {
+  // Notion delivers an OUTER zip containing ExportBlock-…-Part-1.zip with the real Markdown inside.
+  const inner = makeDeflateZip([{ name: "Roadmap abc.md", data: E.encode("# Roadmap\n\nhi") }]);
+  const outer = makeDeflateZip([{ name: "ExportBlock-x-Part-1.zip", data: inner }]);
+  const files = await readZipDeep(outer.buffer);
+  assert.ok(files.some((f) => /Roadmap abc\.md$/.test(f.name)), "found the .md nested one level deep");
+  // a normal (non-nested) export is unaffected
+  const flat = await readZipDeep(makeDeflateZip([{ name: "note.md", data: E.encode("# Note") }]).buffer);
+  assert.equal(flat.length, 1);
+  assert.equal(D.decode(flat[0].data), "# Note");
 });
 
 test("zipToVault strips id-hashes, rewrites images, makes wikilinks", async () => {

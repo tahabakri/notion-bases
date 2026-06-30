@@ -431,6 +431,27 @@ async function readZip(arrayBuffer) {
   return out;
 }
 
+// Notion often wraps an export in an OUTER zip whose only entry is the real export
+// (e.g. ExportBlock-…-Part-1.zip), and large exports split into Part-1.zip, Part-2.zip, ….
+// If a level has no Markdown but does contain inner .zip files, descend and flatten them
+// (depth-guarded). Non-zip files at a no-Markdown level are dropped — they're export wrappers.
+async function readZipDeep(arrayBuffer, depth?: any) {
+  depth = depth || 0;
+  var files = await readZip(arrayBuffer);
+  var hasMd = files.some(function (f) { return /\.md$/i.test(f.name); });
+  if (hasMd || depth >= 4) return files;
+  var zips = files.filter(function (f) { return /\.zip$/i.test(f.name); });
+  if (!zips.length) return files;
+  var out = [];
+  for (var i = 0; i < zips.length; i++) {
+    var d = zips[i].data;
+    var buf = d.buffer.slice(d.byteOffset, d.byteOffset + d.byteLength);
+    var inner = await readZipDeep(buf, depth + 1);
+    for (var j = 0; j < inner.length; j++) out.push(inner[j]);
+  }
+  return out;
+}
+
 // ---------- ZIP writer (method-0 stored + CRC32) ----------
 var _crc;
 function crc32(bytes) {
@@ -469,7 +490,7 @@ function writeZip(entries) {
 }
 
 export {
-  readZip, writeZip,
+  readZip, readZipDeep, writeZip,
   mergeZipMd, backupToMarkdown,
   zipToVault, backupToVault, backupToBasesVault,
 };

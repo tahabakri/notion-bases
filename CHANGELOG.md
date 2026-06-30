@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2
+
+- Fix: handle Notion's nested / multi-part export zips. Notion often delivers an export as an outer
+  `.zip` that contains `ExportBlock-…-Part-1.zip` (and `Part-2.zip`, … for large workspaces); the
+  converter now descends into inner zips automatically instead of reporting "No Markdown files found".
+
 ## 0.1.1
 
 - Fix: a database's `.base` view no longer lists its own `.base` file as an empty row. The view now
