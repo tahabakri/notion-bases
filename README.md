@@ -57,19 +57,44 @@ files.
 npx notion-bases <export.zip | backup.json> [options]
 
 Options:
-  --out <dir>   Output folder (default: <input>-vault). With --md, an output file.
-  --md          Plain merged Markdown instead of a vault.
-  -h, --help    Show help.
+  --out <dir>      Output folder (default: <input>-vault). With --md, an output file.
+  --md             Plain merged Markdown instead of a vault.
+  --only "A,B"     Convert only these databases, by name (.json backups only).
+  --list           List database names + row counts in a backup, then exit.
+  --watch <path>   Re-convert whenever the file/folder changes (folder = newest .json/.zip).
+  --interval <s>   Watch poll interval in seconds (default 10).
+  -h, --help       Show help.
 ```
 
 ```bash
-npx notion-bases Export.zip                 # → Export-vault/
-npx notion-bases Export.zip --out MyVault   # → MyVault/
-npx notion-bases backup.json                # databases become real Obsidian Bases
-npx notion-bases Export.zip --md            # one clean Markdown file
+npx notion-bases Export.zip                       # → Export-vault/
+npx notion-bases backup.json                      # databases become real Obsidian Bases
+npx notion-bases backup.json --only "Tasks,Docs"  # just those databases
+npx notion-bases --list backup.json               # see the database names
+npx notion-bases Export.zip --md                  # one clean Markdown file
 ```
 
 Install it globally if you prefer: `npm i -g notion-bases`, then `notion-bases Export.zip`.
+
+## Keep an Obsidian vault auto-updated from Notion
+
+`--watch` re-converts whenever its input changes — point it at a single file you re-export, or at a
+**folder** and it always converts the newest `.json`/`.zip` in it. Combined with a scheduled local
+[Restora](https://restora.cc) backup, that's a hands-off, **one-way, local** Notion → Obsidian refresh.
+No server, no stored token in notion-bases — it only ever reads files.
+
+```bash
+# one-time: connect Restora, then schedule daily LOCAL backups to a folder
+npx @restora/cli backup --to local --dir ~/notion-backups   # optionally: --databases id,id
+npx @restora/cli schedule --daily 09:00
+
+# keep the vault mirrored from those backups (token-free):
+npx notion-bases --watch ~/notion-backups --out ~/ObsidianVault/Notion
+```
+
+It's a **refresh, not sync** — Notion stays the source of truth; a refresh overwrites the mirrored
+notes (edit *new* notes elsewhere in your vault). Cross-device is free: your vault already lives in
+iCloud/Dropbox/Obsidian Sync.
 
 ## How it works
 

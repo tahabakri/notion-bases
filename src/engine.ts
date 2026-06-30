@@ -128,11 +128,13 @@ function pageToMd(page, opts?: any) {
 }
 
 // Merged markdown (json mode).
-function backupToMarkdown(b) {
+function backupToMarkdown(b, opts?: any) {
+  opts = opts || {};
   if (!b || !Array.isArray(b.databases)) throw new Error("That doesn't look like a Restora backup (.json).");
   var docs = [];
   (b.databases || []).forEach(function (db) {
     (db.dataSources || []).forEach(function (ds) {
+      if (opts.only && !opts.only.has(String(ds.name || db.title || "Database").toLowerCase().trim())) return;
       docs.push("<!-- " + (ds.name || db.title || "Database") + " -->");
       (ds.pages || []).forEach(function (p) { docs.push(pageToMd(p)); });
     });
@@ -238,6 +240,7 @@ function backupToVault(b, opts) {
   var used = {}, pages = [];
   (b.databases || []).forEach(function (db) {
     (db.dataSources || []).forEach(function (ds) {
+      if (opts.only && !opts.only.has(String(ds.name || db.title || "Database").toLowerCase().trim())) return;
       (ds.pages || []).forEach(function (p) {
         var title = pageTitle(p.properties);
         var fields: any = { title: title, source: "Notion" };
@@ -364,6 +367,7 @@ function backupToBasesVault(b, opts) {
 
   (b.databases || []).forEach(function (db) {
     (db.dataSources || []).forEach(function (ds) {
+      if (opts.only && !opts.only.has(String(ds.name || db.title || "Database").toLowerCase().trim())) return;
       dbCount++;
       var schema = ds.properties || {}, titleName = null;
       Object.keys(schema).forEach(function (n) { if (schema[n] && schema[n].type === "title") titleName = n; });
@@ -388,9 +392,9 @@ function backupToBasesVault(b, opts) {
     });
   });
 
-  // standalone (non-database) pages → a top-level Pages/ folder
+  // standalone (non-database) pages → a top-level Pages/ folder (skipped when --only scopes to databases)
   var usedStandalone = {};
-  (b.pages || []).forEach(function (p) {
+  if (!opts.only) (b.pages || []).forEach(function (p) {
     var title = pageTitle(p.properties);
     var body = pageToMd(p, { wikilinks: opts.wikilinks !== false, frontmatter: true, resolveImage: resolveImage });
     pages.push({ name: "Pages/" + uniq(usedStandalone, safeName(title) + ".md"), markdown: frontmatter({ title: title, source: "Notion" }) + body });
@@ -489,8 +493,21 @@ function writeZip(entries) {
   return outArr;
 }
 
+// List database names + row counts from a backup .json — for `--list` and `--only` discovery.
+function listDatabases(b) {
+  if (!b || !Array.isArray(b.databases)) throw new Error("That doesn't look like a Restora backup (.json).");
+  var out = [];
+  (b.databases || []).forEach(function (db) {
+    (db.dataSources || []).forEach(function (ds) {
+      out.push({ name: ds.name || db.title || "Database", rows: (ds.pages || []).length });
+    });
+  });
+  return out;
+}
+
 export {
   readZip, readZipDeep, writeZip,
   mergeZipMd, backupToMarkdown,
   zipToVault, backupToVault, backupToBasesVault,
+  listDatabases,
 };

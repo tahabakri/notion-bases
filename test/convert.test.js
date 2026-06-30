@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { deflateRawSync } from "node:zlib";
 import {
-  readZip, readZipDeep, writeZip, zipToVault, backupToBasesVault, backupToMarkdown,
+  readZip, readZipDeep, writeZip, zipToVault, backupToBasesVault, backupToMarkdown, listDatabases,
 } from "../dist/engine.js";
 
 const E = new TextEncoder();
@@ -138,4 +138,24 @@ test("backupToMarkdown merges a backup into one document", () => {
   assert.match(md, /# Notion export —/);
   assert.match(md, /Alpha/);
   assert.match(md, /Website/);
+});
+
+test("--only scopes the vault to selected databases (by name)", () => {
+  const vault = backupToBasesVault(BACKUP, { wikilinks: true, only: new Set(["tasks"]) });
+  assert.ok(vault.pages.some((p) => p.name === "Tasks/Alpha.md"), "selected db is kept");
+  assert.ok(vault.pages.some((p) => p.name === "Tasks/Tasks.base"), "selected db .base is kept");
+  assert.ok(!vault.pages.some((p) => p.name.startsWith("Projects/")), "unselected db is dropped");
+  assert.match(vault.note, /1 database/, "note reflects only the selected database");
+
+  // case-insensitive match, and backupToMarkdown honors it too
+  const md = backupToMarkdown(BACKUP, { only: new Set(["projects"]) });
+  assert.match(md, /Website/, "selected db present");
+  assert.doesNotMatch(md, /Alpha/, "unselected db absent");
+});
+
+test("listDatabases returns names + row counts", () => {
+  const dbs = listDatabases(BACKUP);
+  assert.equal(dbs.length, 2);
+  assert.deepEqual(dbs.map((d) => d.name).sort(), ["Projects", "Tasks"]);
+  assert.equal(dbs.find((d) => d.name === "Tasks").rows, 1);
 });
