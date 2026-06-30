@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+- Fix: a database's `.base` view no longer lists its own `.base` file as an empty row. The view now
+  filters to Markdown notes (`file.ext == "md"`) in addition to the folder, so the result count and
+  rows reflect only the database's pages.
+
 ## 0.1.0
 
 Initial release.

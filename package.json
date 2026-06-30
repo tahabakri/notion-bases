@@ -1,6 +1,6 @@
 {
   "name": "notion-bases",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Convert a Notion export into a real Obsidian vault — wikilinks, frontmatter, attachments, and real .base database files. No token, no login, fully local.",
   "type": "module",
   "bin": {

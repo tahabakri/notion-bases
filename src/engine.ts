@@ -329,7 +329,7 @@ function uniqFolder(used, name) {
   used[n.toLowerCase()] = 1; return n;
 }
 function basesFileYaml(folder, schema, titleName) {
-  var filt = inFolderFilter(folder), usedKeys = {}, props = [], order = ["      - file.name"];
+  var filt = inFolderFilter(folder), mdFilt = "'file.ext == \"md\"'", usedKeys = {}, props = [], order = ["      - file.name"];
   Object.keys(schema || {}).forEach(function (n) {
     if (n === titleName) return;
     if (schema[n] && schema[n].type === "title") return;
@@ -339,10 +339,10 @@ function basesFileYaml(folder, schema, titleName) {
     props.push("  " + yamlKey(key) + ":\n    displayName: " + JSON.stringify(String(n)));
     order.push("      - note." + key);
   });
-  var y = "filters:\n  and:\n    - " + filt + "\n";
+  var y = "filters:\n  and:\n    - " + filt + "\n    - " + mdFilt + "\n";
   if (props.length) y += "properties:\n" + props.join("\n") + "\n";
   y += "views:\n  - type: table\n    name: " + JSON.stringify(String(folder)) + "\n";
-  y += "    filters:\n      and:\n        - " + filt + "\n";
+  y += "    filters:\n      and:\n        - " + filt + "\n        - " + mdFilt + "\n";
   y += "    order:\n" + order.join("\n") + "\n";
   return y;
 }

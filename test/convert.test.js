@@ -117,6 +117,7 @@ test("backupToBasesVault emits typed frontmatter, resolved relations, and a .bas
   assert.ok(base, ".base file written for the database");
   assert.match(base.markdown, /type: table/, ".base declares a table view");
   assert.match(base.markdown, /file\.inFolder\("Tasks"\)/, ".base scopes to its folder");
+  assert.match(base.markdown, /file\.ext == "md"/, ".base excludes itself — only .md note rows");
   assert.match(base.markdown, /displayName/, ".base preserves column display names");
 });
 
