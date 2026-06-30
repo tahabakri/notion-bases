@@ -1,0 +1,51 @@
+{
+  "name": "notion-bases",
+  "version": "0.1.0",
+  "description": "Convert a Notion export into a real Obsidian vault — wikilinks, frontmatter, attachments, and real .base database files. No token, no login, fully local.",
+  "type": "module",
+  "bin": {
+    "notion-bases": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "author": "Taha Bakri",
+  "keywords": [
+    "notion",
+    "notion-export",
+    "notion-to-obsidian",
+    "obsidian",
+    "obsidian-bases",
+    "notion-database",
+    "markdown",
+    "migration",
+    "zip",
+    "no-token"
+  ],
+  "homepage": "https://github.com/tahabakri/notion-bases#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tahabakri/notion-bases.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tahabakri/notion-bases/issues"
+  },
+  "scripts": {
+    "build": "esbuild src/cli.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/cli.js --banner:js=\"#!/usr/bin/env node\" && esbuild src/engine.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/engine.js",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "esbuild": "^0.23.0",
+    "typescript": "^5.5.0"
+  }
+}
