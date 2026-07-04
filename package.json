@@ -1,6 +1,6 @@
 {
   "name": "notion-bases",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Convert a Notion export into a real Obsidian vault — wikilinks, frontmatter, attachments, and real .base database files. No token, no login, fully local.",
   "type": "module",
   "bin": {
@@ -29,7 +29,7 @@
     "zip",
     "no-token"
   ],
-  "homepage": "https://github.com/tahabakri/notion-bases#readme",
+  "homepage": "https://restora.cc",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tahabakri/notion-bases.git"
